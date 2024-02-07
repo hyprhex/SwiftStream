@@ -9,27 +9,6 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func WriteJSON(w http.ResponseWriter, status int, v any) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(status)
-	return json.NewEncoder(w).Encode(v)
-}
-
-type APIError struct {
-	Error string
-}
-
-type apiFunc func(w http.ResponseWriter, r *http.Request) error
-
-func makeHTTPHandlerFunc(f apiFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		if err := f(w, r); err != nil {
-			// TODO: Show error depend on the return status code from the handler
-			WriteJSON(w, http.StatusBadRequest, APIError{Error: err.Error()})
-		}
-	}
-}
-
 type APIServer struct {
 	listenAddr string
 }
@@ -80,4 +59,25 @@ func (s *APIServer) handleDeleteAccount(w http.ResponseWriter, r *http.Request) 
 
 func (s *APIServer) handleTransfer(w http.ResponseWriter, r *http.Request) error {
 	return nil
+}
+
+func WriteJSON(w http.ResponseWriter, status int, v any) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	return json.NewEncoder(w).Encode(v)
+}
+
+type APIError struct {
+	Error string
+}
+
+type apiFunc func(w http.ResponseWriter, r *http.Request) error
+
+func makeHTTPHandlerFunc(f apiFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if err := f(w, r); err != nil {
+			// TODO: Show error depend on the return status code from the handler
+			WriteJSON(w, http.StatusBadRequest, APIError{Error: err.Error()})
+		}
+	}
 }
